@@ -34,6 +34,7 @@
 %if %{with multiple_lnds}
 %global enable_multi_lnds 1
 %endif
+%bcond_with kmod_dep
 
 # LUTF Turn off brp-python-precompile script as we don't want the python files
 # to be compiled on installation
@@ -261,6 +262,9 @@ Requires: (%{lustre_name}-dkms or %{requires_kmod_name} >= %{requires_release_ma
 %else
 Requires: %{requires_kmod_name} >= %{requires_release_major_minor}
 %endif
+%if %{with kmod_dep}
+Requires: %{requires_kmod_name} = %{requires_kmod_version}
+%endif
 %endif
 %if %{with lustre_tests_lutf}
 Requires: python3 >= 3.6.0
@@ -455,6 +459,9 @@ Requires: (%{lustre_name}-dkms or %{requires_kmod_name} >= %{requires_release_ma
 %else
 Requires: %{requires_kmod_name} >= %{requires_release_major_minor}
 %endif
+%if %{with kmod_dep}
+Requires: %{requires_kmod_name} = %{requires_kmod_version}
+%endif
 %endif
 
 %description devel
@@ -483,6 +490,10 @@ Requires: (%{lustre_name}-dkms or %{requires_kmod_name} >= %{requires_release_ma
 Requires: %{requires_kmod_name} >= %{requires_release_major_minor}
 %endif
 Requires: %{requires_kmod_tests_name} >= %{requires_release_major_minor}
+%if %{with kmod_dep}
+Requires: %{requires_kmod_name} = %{requires_kmod_version}
+Requires: %{requires_kmod_tests_name} = %{requires_kmod_version}
+%endif
 %endif
 %if %{with lustre_tests_lutf}
 Requires: python3 >= 3.6.0
