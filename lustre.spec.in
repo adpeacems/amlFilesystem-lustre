@@ -307,7 +307,6 @@ Requires: %{name}-osd-mount
 Obsoletes: lustre-server < %{version}
 Provides: lustre-server = %{version}-%{release}
 %endif
-Obsoletes: lustre-client < %{version}
 Provides: lustre-client = %{version}-%{release}
 %if "%{_vendor}" == "redhat" || "%{_vendor}" == "fedora" || 0%{?openEuler}
 #suse don't support selinux
