@@ -386,8 +386,7 @@ static int ll_readdir(struct file *filp, void *cookie, filldir_t filldir)
 		GOTO(out, rc = PTR_ERR(op_data));
 
 	/* foreign dirs are browsed out of Lustre */
-	if (unlikely(op_data->op_mea1 != NULL &&
-		     op_data->op_mea1->lsm_md_magic == LMV_MAGIC_FOREIGN)) {
+	if (unlikely(lmv_dir_foreign(op_data->op_lso1))) {
 		ll_finish_md_op_data(op_data);
 		RETURN(-ENODATA);
 	}
@@ -687,10 +686,9 @@ int ll_dir_setstripe(struct inode *inode, struct lov_user_md *lump,
 	RETURN(rc);
 }
 
-static int ll_dir_get_default_layout(struct inode *inode, void **plmm,
-				     int *plmm_size,
-				     struct ptlrpc_request **request, u64 valid,
-				     enum get_default_layout_type type)
+int ll_dir_get_default_layout(struct inode *inode, void **plmm, int *plmm_size,
+			      struct ptlrpc_request **request, u64 valid,
+			      enum get_default_layout_type type)
 {
 	struct ll_sb_info *sbi = ll_i2sbi(inode);
 	struct mdt_body   *body;
@@ -1960,7 +1958,7 @@ out_rmdir:
 			 * instead of the client.
 			 */
 			if (cmd == LL_IOC_MDC_GETINFO_V2 &&
-			    ll_i2info(inode)->lli_lsm_md != NULL)
+			    ll_dir_striped(inode))
 				valid &= ~(OBD_MD_FLSIZE | OBD_MD_FLBLOCKS);
 
 			if (flagsp && copy_to_user(flagsp, &valid,
