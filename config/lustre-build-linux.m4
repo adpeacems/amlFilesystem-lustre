@@ -113,6 +113,7 @@ AC_DEFUN([LB_LINUX_RELEASE], [
 	SUSE_KERNEL="no"
 	UBUNTU_KERNEL="no"
 	MARINER_KERNEL="no"
+	AZURELINUX_KERNEL="no"
 	# And if any of the above kernels has been detected yet
 	KERNEL_FOUND="no"
 
@@ -186,9 +187,23 @@ AC_DEFUN([LB_LINUX_RELEASE], [
 		])
 	])
 
+	# Check for Azure Linux
+	AS_IF([test "x$KERNEL_FOUND" = "xno"], [
+		AC_CACHE_CHECK([for Azure Linux kernel signature], lb_cv_azurelinux_kernel_sig, [
+			lb_cv_azurelinux_kernel_sig="no"
+			AS_IF([grep -Fq '.azl' $LINUX_OBJ/include/generated/utsrelease.h], [
+				lb_cv_azurelinux_kernel_sig="yes"
+			])
+		])
+		AS_IF([test "x$lb_cv_azurelinux_kernel_sig" = "xyes"], [
+			AZURELINUX_KERNEL="yes"
+			KERNEL_FOUND="yes"
+		])
+	])
+
 	# If still no kernel was found, a warning is issued
 	AS_IF([test "x$KERNEL_FOUND" = "xno"], [
-		AC_MSG_WARN([Kernel Distro seems to be neither RedHat, SuSE, Ubuntu, nor Mariner])
+		AC_MSG_WARN([Kernel Distro seems to be neither RedHat, SuSE, Ubuntu, nor Azure Linux])
 	])
 
 	AC_MSG_CHECKING([for Linux kernel module package directory])
@@ -201,7 +216,8 @@ AC_DEFUN([LB_LINUX_RELEASE], [
 		      [test x$SUSE_KERNEL = xyes], [KMP_MODDIR="updates/kernel"],
 		      [test x$UBUNTU_KERNEL = xyes], [KMP_MODDIR="updates/kernel"],
 			  [test x$MARINER_KERNEL = xyes], [KMP_MODDIR="extra/kernel"],
-		      [AC_MSG_WARN([Kernel Distro seems to be neither RedHat, SuSE, Ubuntu, nor Mariner])]
+			  [test x$AZURELINUX_KERNEL = xyes], [KMP_MODDIR="extra/kernel"],
+		      [AC_MSG_WARN([Kernel Distro seems to be neither RedHat, SuSE, Ubuntu, nor Azure Linux])]
 		)
 		IN_KERNEL="${PACKAGE}"])
 	AC_MSG_RESULT($KMP_MODDIR)
@@ -283,7 +299,7 @@ done
 if test "$DEFAULT_LINUX" = "/lib/modules/$(uname -r)/source"; then
 	PATHS="/lib/modules/$(uname -r)/build"
 else
-	PATHS="/usr/src/linux-headers-$(uname -r)"
+	lPATHS="/usr/src/linux-headers-$(uname -r)"
 fi
 PATHS+=" $DEFAULT_LINUX"
 for DEFAULT_LINUX_OBJ in $PATHS; do

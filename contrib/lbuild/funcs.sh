@@ -1,3 +1,11 @@
+# vim:expandtab:shiftwidth=4:softtabstop=4:tabstop=4:
+# NOTE: This is a skeleton that is completely untested.
+# increment this if you have made a change that should force a new kernel
+#BUILD_GEN+=".0"
+#BUILD_GEN+=".1"	# refactor both rhel5 and rhel6
+#BUILD_GEN+=".0"	# TT-107: don't cache the BUILD dir (reset major to 5)
+BUILD_GEN+=".2"	# LU-9850
+
 cleanup() {
 
     true
@@ -158,6 +166,10 @@ autodetect_distro() {
                 version="$(lsb_release -s -r | cut --delimiter=. --fields=1)"
                 name="cm"
                 ;;
+            "azurelinux")
+                version="$(lsb_release -s -r | cut --delimiter=. --fields=1)"
+                name="al${version}":w
+                ;;
             *)
                 fatal 1 "I don't know what distro name $name and version $version is.\nEither update autodetect_distro() or use the --distro argument."
                 ;;
@@ -181,6 +193,10 @@ autodetect_distro() {
         if [ -f /etc/mariner-release ]; then
             version=$(sed -n -e 's/^CBL-Mariner\s+//p' /etc/mariner-release)
             name="cm$version"
+        fi
+        if [ -f /etc/azurelinux-release ]; then
+            version=$(sed -n -e 's/^Azure Linux //p' /etc/azurelinux-release | cut --delimiter=. --fields=1))
+            name="al${version}"
         fi
         if [ -z "$name" -o -z "$version" ]; then
             fatal 1 "I don't know how to determine distro type/version.\nEither update autodetect_distro() or use the --distro argument."
@@ -219,6 +235,7 @@ autodetect_target() {
 	sles15.5) target="$(uname -r | cut -d . -f 1,2)-sles15sp5";;
           fc18)   target="3.x-fc18";;
           cm2)    target="5.x-cm2";;
+          azl*)   target="5.x-azl";;
              *)   fatal 1 "I don't know what distro $distro is.\nEither update autodetect_target() or use the --target argument.";;
     esac
 
